@@ -4,7 +4,7 @@ var mongo = require('mongodb');
 var assert = require('assert');
 var bodyParser = require('body-parser');
 var cors = require('cors');
-var ObjectID = require('mongodb').ObjectID; 
+var ObjectId = require('mongodb').ObjectId; 
 
 
 app.set('port', (process.env.PORT || 8000));
@@ -27,23 +27,62 @@ app.get('/', function(req, res){
 
 //API to display UserDetails
 //tested 14th February 2018: Bharath Ravichandran
-app.post('/showUserDetails', function(req, res){
+app.get('/showUserDetails', function(req, res){
     var resultArry = [];
     mongo.connect(url, function(err, db){
       assert.equal(null, err);
-      var cursor = db.collection('UserDetails').find({
-          id: req.body._id
-      });
-      cursor.forEach(function(doc, err){
+      var cursor = db.collection('UserDetails').find();
+      cursor.forEach(function(doc, err){ 
         assert.equal(null, err);
         resultArry.push(doc);
       },
         function(){
             db.close();
-            res.send(resultArry);
+            if (err) {
+                console.log(err);
+            } else {
+                res.send(resultArry);
+            }
         });
     });
 });
+
+
+//API to display edit UserDetails
+//tested 14th February 2018: Bharath Ravichandran
+// app.post('/showEditUserDetails', function(req, res){
+//     var resultArry = [];
+//     mongo.connect(url, function(err, db){
+//       assert.equal(null, err);
+//       var cursor = db.collection('UserDetails').find({
+//           "id": req.body.id
+//       });
+//       cursor.forEach(function(doc, err){
+//         assert.equal(null, err);
+//         resultArry.push(doc);
+//       },
+//         function(){
+//             db.close();
+//             res.send(resultArry);
+//         });
+//     });
+// });
+
+//view display edit User Details 
+app.get('/showEditUserDetails', function(req, res){
+    var resultArry = "";
+    mongo.connect(url, function(err, db){
+      assert.equal(null, err);
+      var cursor = db.collection('UserDetails').findOne({ _id: req.body._id });
+  
+        assert.equal(null, err);
+        // resultArry.push();
+
+        db.close();
+        res.send({results: resultArry });
+
+   });
+  });
 
 
 //API FOR add UserDetails
@@ -51,10 +90,10 @@ app.post('/showUserDetails', function(req, res){
 app.post('/addUserDetails', function(req, res){
   var newUserDetails = {
       
-      name: req.body.firstname,
-      address: req.body.address,
-      email: req.body.email,
-      contact: req.body.contact,
+    firstname: req.body.firstname,
+    address: req.body.address,
+    email: req.body.email,
+    contact: req.body.contact,
   };
   mongo.connect(url, function(err, db){
   assert.equal(null, err);
@@ -131,7 +170,9 @@ app.delete('/deleteUserDetails', function(req, res){
     mongo.connect(url, function(err, db){
       assert.equal(null, err);
       var cursor = db.collection('UserDetails').findOneAndDelete(
-        { "id":req.body._id}
+        { 
+            _id: req.body.id
+        }
       );
       if(err){
         res.send("false");
@@ -139,6 +180,5 @@ app.delete('/deleteUserDetails', function(req, res){
         res.send("true");
       }
         db.close();
-        res.send(resultArry);
-      });
-  });
+    });
+});
